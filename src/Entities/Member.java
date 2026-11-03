@@ -90,7 +90,7 @@ setEmail(email);
     @Override
     public String toString() {
 
-        return "Member Name is: " + getName()+ " | Member Email is: " + getEmail();
+        return "\n Member Name is: " + getName()+ " | Member Email is: " + getEmail()+"\n";
 
     }
 }

@@ -75,8 +75,8 @@ private boolean  isAvailable;
     @Override
     public String toString() {
 
-            return"Book Id is: " + getId()+ "Book Name is: " + getTitle()+ " | Author Name is: " + getAuthor()
-                    + " | Category is: " + getCategory() + " | " + (isAvailable() ? "Book Available" : "Book Not Available");
+            return"\n Book Id is: " + getId()+ "|   Book Name is: " + getTitle()+ "   | Author Name is: " + getAuthor()
+                    + " |   Category is: " + getCategory() + " |   " + (isAvailable() ? "Book Available" : "Book Not Available \n");
 
     }
 }

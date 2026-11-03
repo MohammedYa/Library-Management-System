@@ -9,15 +9,18 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class BookServiceImpl implements BookService {
-    Library library = new Library();
+    private   Library library ;
+    public  BookServiceImpl(  Library library){
+        this.library=library;
+    }
 
     @Override
-    public void addBook(int id, String title, String author, String category, boolean isAvailable) {
-        Book book = new Book(id, title, author, category, isAvailable);
-        boolean isExistBook = library.getBooks().stream().anyMatch(libraryBook->libraryBook.getId()==id);
+    public void addBook(int bookId, String title, String author, String category, boolean isAvailable) {
+        Book book = new Book(bookId, title, author, category, isAvailable);
+        boolean isExistBook = library.getBooks().stream().anyMatch(libraryBook->libraryBook.getId()==bookId);
         if(!isExistBook){
             library.getBooks().add(book);
-            System.out.print("Book Added Successfully .");
+            System.out.print("Book Added Successfully . \n");
         }
         else {
             System.out.print("Book Already Exists .");
@@ -48,7 +51,7 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public Book SearchBook(int id) {
+    public Book searchBook(int id) {
         Optional<Book> book = library.getBooks().stream().filter(libraryBook -> libraryBook.getId() == id).findFirst();
         return book.orElse(null);
 
@@ -60,7 +63,7 @@ public class BookServiceImpl implements BookService {
             library.getBooks().stream()
                     .forEach(System.out::println);
         } else {
-            System.out.print("Library Is Empty ....");
+            System.out.print("Library Is Empty .... \n ");
         }
 
     }
