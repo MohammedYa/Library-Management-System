@@ -105,11 +105,13 @@ boolean status=true;
                     break;
                 case 12:
                     coutOfTry = 1;
-                    System.out.print("Return Book");
+                    System.out.print("Return Book page");
+                    returnBook();
                     break;
                 case 13:
                     coutOfTry = 1;
                     System.out.print("Sort Book");
+                    sortBooks();
                     break;
                 case 14:
                     System.out.print("Exist :");
@@ -154,6 +156,14 @@ boolean status=true;
 
 
 }
+
+
+
+
+
+
+
+
 public void  addBook(){
     System.out.print("\n  Enter Book Id :  \n");
     int id = scanner.nextInt();
@@ -232,5 +242,42 @@ public  void borrowBook(){
     System.out.print("\n  Enter Book Id :  \n");
     int bookId = scanner.nextInt();
     borrowingService.borrowBook(bookId,memberId);
+}
+public  void returnBook(){
+    System.out.print("\n  Enter Member Id :  \n");
+    int memberId = scanner.nextInt();
+    System.out.print("\n  Enter Book Id :  \n");
+    int bookId = scanner.nextInt();
+    borrowingService.returnBook(bookId,memberId);
+}
+public  void sortBooks(){
+
+    int countTry=1;
+    boolean status=true;
+    while (status){
+        try {
+            System.out.print("\n  Enter Number of Option Sort  :  \n");
+            System.out.print("\n 1 ---------> Sort By Title  :  \n");
+            System.out.print("\n 2 ---------> Sort By Author    :  \n");
+            System.out.print("\n 3 ---------> Sort By Book Id    :  \n");
+            int number = scanner.nextInt();
+            bookService.sortBooks(number);
+            displayBooks();
+            break;
+        }catch (InputMismatchException e){
+            if (countTry<3){
+                System.out.print("\n Enter Number between 1 - 2 - 3 \n");
+                System.out.print("\n  You have "+(3-countTry)+" chance: \n ");
+                countTry++;
+                scanner.nextLine();
+            }
+            else {
+                System.out.print("\n  Thank you ------->  Try again next Time   : \n ");
+                status= false;
+            }
+        }
+
+
+    }
 }
 
