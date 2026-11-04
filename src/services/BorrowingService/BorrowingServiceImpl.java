@@ -5,6 +5,12 @@ import Entities.Book;
 import Entities.Library;
 import Entities.Member;
 
+import Exeptions.BookNotFoundException;
+import Exeptions.MemberNotFoundException;
+import Exeptions.BookNotAvailableException;
+import Exeptions.BorrowingLimitExceededException;
+import Exeptions.BookNotBorrowedByMemberException;
+
 import java.util.Optional;
 
 /**
@@ -26,120 +32,96 @@ public class BorrowingServiceImpl implements BorrowingService {
 
     /**
      * Allows a member to borrow an available book.
-     * Checks whether the member and book exist, whether the book is available,
-     * and whether the member has reached the maximum borrowing limit of three books.
      *
-     * @param bookId   the ID of the book to borrow
+     * @param bookId the ID of the book to borrow
      * @param memberId the ID of the member borrowing the book
      */
     @Override
     public void borrowBook(int bookId, int memberId) {
 
-        boolean isExistMember = library.getMembers().stream()
-                .anyMatch(librarymember -> librarymember.getId() == memberId);
+        Optional<Member> member = library.getMembers().stream()
+                .filter(libraryMember -> libraryMember.getId() == memberId)
+                .findFirst();
 
-        if (isExistMember) {
+        if (member.isEmpty()) {
+            throw new MemberNotFoundException("Member Not Found.");
+        }
 
-            boolean isExistBook = library.getBooks().stream()
-                    .anyMatch(libraryBook -> libraryBook.getId() == bookId);
+        Optional<Book> book = library.getBooks().stream()
+                .filter(libraryBook -> libraryBook.getId() == bookId)
+                .findFirst();
 
-            Optional<Book> book = library.getBooks().stream()
-                    .filter(libraryBook -> libraryBook.getId() == bookId)
-                    .findFirst();
+        if (book.isEmpty()) {
+            throw new BookNotFoundException("Book Not Found.");
+        }
 
-            if (isExistBook) {
+        if (!book.get().isAvailable()) {
+            throw new BookNotAvailableException("Book Not Available.");
+        }
 
-                if (book.get().isAvailable()) {
+        boolean statusOfAdded = member.get().addBorrowedBook(book.get());
 
-                    Optional<Member> member = library.getMembers().stream()
-                            .filter(libraryMember -> libraryMember.getId() == memberId)
-                            .findFirst();
-
-                    if (member.isPresent()) {
-
-                        boolean statusOfAdded = member.get().addBorrowedBook(book.get());
-
-                        if (statusOfAdded) {
-                            book.get().setAvailable(false);
-                            System.out.print("\nBook Borrowed successfully ....\n");
-                        } else {
-                            System.out.print("\nMember Cannot Borrow More Than 3 Books\n");
-                        }
-                    }
-
-                } else {
-                    System.out.print("\nBook Not Available \n");
-                }
-
-            } else {
-                System.out.print("\nBook Not Exist \n");
-            }
-
+        if (statusOfAdded) {
+            book.get().setAvailable(false);
+            System.out.println("\nBook Borrowed Successfully ....\n");
         } else {
-            System.out.print("\n Member is not Exist ...... \n");
+            throw new BorrowingLimitExceededException(
+                    "Member Cannot Borrow More Than 3 Books."
+            );
         }
     }
 
     /**
      * Allows a member to return a previously borrowed book.
-     * Checks whether the member and book exist and whether the specified
-     * member has actually borrowed the book.
      *
-     * @param bookId   the ID of the book to return
+     * @param bookId the ID of the book to return
      * @param memberId the ID of the member returning the book
      */
     @Override
     public void returnBook(int bookId, int memberId) {
 
-        boolean isExistMember = library.getMembers().stream()
-                .anyMatch(librarymember -> librarymember.getId() == memberId);
+        Optional<Member> member = library.getMembers().stream()
+                .filter(libraryMember -> libraryMember.getId() == memberId)
+                .findFirst();
 
-        if (isExistMember) {
+        if (member.isEmpty()) {
+            throw new MemberNotFoundException("Member Not Found.");
+        }
 
-            boolean isExistBook = library.getBooks().stream()
-                    .anyMatch(libraryBook -> libraryBook.getId() == bookId);
+        Optional<Book> book = library.getBooks().stream()
+                .filter(libraryBook -> libraryBook.getId() == bookId)
+                .findFirst();
 
-            if (isExistBook) {
+        if (book.isEmpty()) {
+            throw new BookNotFoundException("Book Not Found.");
+        }
 
-                Optional<Book> book = library.getBooks().stream()
-                        .filter(libraryBook -> libraryBook.getId() == bookId)
-                        .findFirst();
+        Book[] memberBorrowBooks = member.get().getBorrowedBooks();
 
-                Optional<Member> member = library.getMembers().stream()
-                        .filter(libraryMember -> libraryMember.getId() == memberId)
-                        .findFirst();
+        boolean isReturned = false;
 
-                Book[] memberBorrowBooks = member.get().getBorrowedBooks();
+        for (int i = 0; i < memberBorrowBooks.length; i++) {
 
-                boolean isReturned = false;
+            if (memberBorrowBooks[i] != null &&
+                    memberBorrowBooks[i].getId() == bookId) {
 
-                for (int i = 0; i < memberBorrowBooks.length; i++) {
+                boolean statusReturnedBook =
+                        member.get().returnBorrowedBook(memberBorrowBooks[i]);
 
-                    if (memberBorrowBooks[i] != null &&
-                            memberBorrowBooks[i].getId() == bookId) {
+                if (statusReturnedBook) {
+                    book.get().setAvailable(true);
+                    isReturned = true;
 
-                        boolean statusReturnedBook =
-                                member.get().returnBorrowedBook(memberBorrowBooks[i]);
-
-                        if (statusReturnedBook) {
-                            book.get().setAvailable(true);
-                            isReturned = true;
-
-                            System.out.println("Book Returned Successfully ....");
-                        }
-                    }
+                    System.out.println("Book Returned Successfully ....");
+                    break;
                 }
-
-                if (!isReturned) {
-                    System.out.println("This Member Did Not Borrow This Book ....");
-                }
-
-            } else {
-                System.out.print("\nBook Not Exist \n");
             }
+        }
 
-        } else {
-            System.out.print("\n Member is not Exist ...... \n");
+        if (!isReturned) {
+            throw new BookNotBorrowedByMemberException(
+                    "This Member Did Not Borrow This Book."
+            );
         }
     }
 }

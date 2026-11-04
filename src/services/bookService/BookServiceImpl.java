@@ -3,6 +3,8 @@ package services.bookService;
 
 import Entities.Book;
 import Entities.Library;
+import Exeptions.BookAlreadyExistsException;
+import Exeptions.BookNotFoundException;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -49,7 +51,7 @@ public class BookServiceImpl implements BookService {
             library.getBooks().add(book);
             System.out.print("Book Added Successfully . \n");
         } else {
-            System.out.print("Book Already Exists .");
+            throw new BookAlreadyExistsException("Book Already Exists.");
         }
     }
 
@@ -77,8 +79,8 @@ public class BookServiceImpl implements BookService {
                 }
             }
         } else {
-            System.out.println("Book Not Found.\n");
-        }
+
+            throw new BookNotFoundException("Book Not Found. Cannot remove it.");        }
     }
 
     /**
@@ -94,7 +96,9 @@ public class BookServiceImpl implements BookService {
                 .filter(libraryBook -> libraryBook.getId() == id)
                 .findFirst();
 
-        return book.orElse(null);
+        return book.orElseThrow(() ->
+                new BookNotFoundException("Book Not Found.")
+        );
     }
 
     /**
